@@ -1,0 +1,33 @@
+package com.example.demo.service;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.modelo.Usuario;
+import com.example.demo.repository.UsuarioRepository;
+
+@Service
+public class UsuarioService {
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    public Optional<Usuario> login(String correo, String contrasena) {
+
+        Optional<Usuario> usuario = usuarioRepository.findByCorreo(correo);
+
+        if (usuario.isPresent()) {
+
+            if (usuario.get().getContrasena().equals(contrasena)) {
+                return usuario;
+            }
+
+        }
+
+        return Optional.empty();
+
+    }
+
+}
