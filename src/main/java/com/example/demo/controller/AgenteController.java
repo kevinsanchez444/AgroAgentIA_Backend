@@ -22,7 +22,7 @@ public class AgenteController {
     private final AgenteIAService agenteIAService;
 
     public AgenteController(AgenteClimaService agenteClimaService,
-                            AgenteIAService agenteIAService) {
+            AgenteIAService agenteIAService) {
 
         this.agenteClimaService = agenteClimaService;
         this.agenteIAService = agenteIAService;

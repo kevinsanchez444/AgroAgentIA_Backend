@@ -22,9 +22,9 @@ public class AgenteIAService {
     private final RecomendacionRepository recomendacionRepository;
 
     public AgenteIAService(AgenteClimaService agenteClimaService,
-                    GeminiService geminiService,
-                    CultivoRepository cultivoRepository,
-                    RecomendacionRepository recomendacionRepository) {
+            GeminiService geminiService,
+            CultivoRepository cultivoRepository,
+            RecomendacionRepository recomendacionRepository) {
         this.agenteClimaService = agenteClimaService;
         this.geminiService = geminiService;
         this.cultivoRepository = cultivoRepository;
@@ -34,8 +34,7 @@ public class AgenteIAService {
     public RespuestaRecomendacionDTO generarRecomendacion(SolicitudRecomendacionDTO solicitud) {
 
         // Obtener la información del clima desde el Agente Clima
-        RespuestaClimaDTO clima =
-                agenteClimaService.obtenerClima(solicitud.getCiudad());
+        RespuestaClimaDTO clima = agenteClimaService.obtenerClima(solicitud.getCiudad());
 
         // Construir el prompt para Gemini
         String prompt = """
