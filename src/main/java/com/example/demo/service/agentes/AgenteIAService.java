@@ -3,25 +3,38 @@ package com.example.demo.service.agentes;
 import com.example.demo.dto.RespuestaClimaDTO;
 import com.example.demo.dto.RespuestaRecomendacionDTO;
 import com.example.demo.dto.SolicitudRecomendacionDTO;
+import com.example.demo.modelo.Cultivo;
+import com.example.demo.modelo.Recomendacion;
+import com.example.demo.repository.CultivoRepository;
+import com.example.demo.repository.RecomendacionRepository;
+import java.time.LocalDateTime;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AgenteIAService {
 
     private final AgenteClimaService agenteClimaService;
     private final GeminiService geminiService;
+    private final CultivoRepository cultivoRepository;
+    private final RecomendacionRepository recomendacionRepository;
 
     public AgenteIAService(AgenteClimaService agenteClimaService,
-                    GeminiService geminiService) {
+            GeminiService geminiService,
+            CultivoRepository cultivoRepository,
+            RecomendacionRepository recomendacionRepository) {
         this.agenteClimaService = agenteClimaService;
         this.geminiService = geminiService;
+        this.cultivoRepository = cultivoRepository;
+        this.recomendacionRepository = recomendacionRepository;
     }
 
     public RespuestaRecomendacionDTO generarRecomendacion(SolicitudRecomendacionDTO solicitud) {
 
         // Obtener la información del clima desde el Agente Clima
-        RespuestaClimaDTO clima =
-                agenteClimaService.obtenerClima(solicitud.getCiudad());
+        RespuestaClimaDTO clima = agenteClimaService.obtenerClima(solicitud.getCiudad());
 
         // Construir el prompt para Gemini
         String prompt = """
@@ -67,5 +80,25 @@ public class AgenteIAService {
 
         // Devolver la respuesta al frontend
         return new RespuestaRecomendacionDTO(respuestaIA);
+    }
+
+    @Transactional
+    public RespuestaRecomendacionDTO generarYGuardarRecomendacion(Long idCultivo,
+            SolicitudRecomendacionDTO solicitud) {
+
+        Cultivo cultivo = cultivoRepository.findById(idCultivo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Cultivo no encontrado con ID: " + idCultivo));
+
+        RespuestaRecomendacionDTO respuesta = generarRecomendacion(solicitud);
+
+        Recomendacion recomendacion = new Recomendacion();
+        recomendacion.setCultivo(cultivo);
+        recomendacion.setFecha(LocalDateTime.now());
+        recomendacion.setRecomendacion(respuesta.getRecomendacion());
+
+        recomendacionRepository.save(recomendacion);
+
+        return respuesta;
     }
 }

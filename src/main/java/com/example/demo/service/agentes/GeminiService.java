@@ -30,9 +30,8 @@ public class GeminiService {
 
         try {
 
-            String url =
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key="
-                            + apiKey;
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key="
+                    + apiKey;
 
             Parte parte = new Parte(prompt);
             Contenido contenido = new Contenido(List.of(parte));
@@ -41,15 +40,13 @@ public class GeminiService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<GeminiRequest> entity =
-                    new HttpEntity<>(request, headers);
+            HttpEntity<GeminiRequest> entity = new HttpEntity<>(request, headers);
 
-            ResponseEntity<GeminiResponse> response =
-                    restTemplate.exchange(
-                            url,
-                            HttpMethod.POST,
-                            entity,
-                            GeminiResponse.class);
+            ResponseEntity<GeminiResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    GeminiResponse.class);
 
             GeminiResponse body = response.getBody();
 

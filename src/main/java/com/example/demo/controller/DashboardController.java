@@ -8,7 +8,6 @@ import com.example.demo.service.DashboardService;
 
 @RestController
 @RequestMapping("/api/dashboard")
-@CrossOrigin(origins = "*")
 public class DashboardController {
 
     @Autowired

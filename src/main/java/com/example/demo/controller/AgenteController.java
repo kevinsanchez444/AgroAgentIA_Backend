@@ -7,6 +7,7 @@ import com.example.demo.service.agentes.AgenteClimaService;
 import com.example.demo.service.agentes.AgenteIAService;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +22,7 @@ public class AgenteController {
     private final AgenteIAService agenteIAService;
 
     public AgenteController(AgenteClimaService agenteClimaService,
-                            AgenteIAService agenteIAService) {
+            AgenteIAService agenteIAService) {
 
         this.agenteClimaService = agenteClimaService;
         this.agenteIAService = agenteIAService;
@@ -39,6 +40,15 @@ public class AgenteController {
             @RequestBody SolicitudRecomendacionDTO solicitud) {
 
         return agenteIAService.generarRecomendacion(solicitud);
+
+    }
+
+    @PostMapping("/recomendacion/cultivo/{idCultivo}")
+    public RespuestaRecomendacionDTO generarYGuardarRecomendacion(
+            @PathVariable Long idCultivo,
+            @RequestBody SolicitudRecomendacionDTO solicitud) {
+
+        return agenteIAService.generarYGuardarRecomendacion(idCultivo, solicitud);
 
     }
 
