@@ -29,5 +29,18 @@ public class UsuarioService {
         return Optional.empty();
 
     }
+    public String registrar(Usuario usuario){
+
+    if(usuarioRepository.existsByCorreo(usuario.getCorreo())){
+        return "El correo ya está registrado";
+    }
+
+    usuario.setRol("ADMIN");
+
+    usuarioRepository.save(usuario);
+
+    return "Usuario registrado correctamente";
+
+}
 
 }

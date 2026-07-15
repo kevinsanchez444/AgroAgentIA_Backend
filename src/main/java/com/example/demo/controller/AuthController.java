@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.RegistroRequest;
 import com.example.demo.modelo.Usuario;
 import com.example.demo.service.UsuarioService;
 
@@ -30,4 +31,18 @@ public class AuthController {
 
         return "Correo o contraseña incorrectos";
     }
+    
+    
+    @PostMapping("/register")
+public String registrar(@RequestBody RegistroRequest request){
+
+    Usuario usuario = new Usuario();
+
+    usuario.setNombre(request.getNombre());
+    usuario.setCorreo(request.getCorreo());
+    usuario.setContrasena(request.getContrasena());
+
+    return usuarioService.registrar(usuario);
+
+}
 }
