@@ -1,18 +1,14 @@
 package com.example.demo.service.agentes;
 
-import com.example.demo.dto.gemini.Candidate;
 import com.example.demo.dto.gemini.Contenido;
 import com.example.demo.dto.gemini.GeminiRequest;
 import com.example.demo.dto.gemini.GeminiResponse;
 import com.example.demo.dto.gemini.Parte;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,8 +30,9 @@ public class GeminiService {
 
         try {
 
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key="
-                    + apiKey;
+            String url =
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key="
+                            + apiKey;
 
             Parte parte = new Parte(prompt);
             Contenido contenido = new Contenido(List.of(parte));
@@ -44,13 +41,15 @@ public class GeminiService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<GeminiRequest> entity = new HttpEntity<>(request, headers);
+            HttpEntity<GeminiRequest> entity =
+                    new HttpEntity<>(request, headers);
 
-            ResponseEntity<GeminiResponse> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    entity,
-                    GeminiResponse.class);
+            ResponseEntity<GeminiResponse> response =
+                    restTemplate.exchange(
+                            url,
+                            HttpMethod.POST,
+                            entity,
+                            GeminiResponse.class);
 
             GeminiResponse body = response.getBody();
 
@@ -61,7 +60,10 @@ public class GeminiService {
                     || body.getCandidates().get(0).getContent().getParts() == null
                     || body.getCandidates().get(0).getContent().getParts().isEmpty()) {
 
-                return "No fue posible generar una recomendación porque Gemini respondió sin contenido.";
+                return """
+                        Gemini respondió correctamente,
+                        pero no generó contenido.
+                        """;
             }
 
             return body.getCandidates()
@@ -71,44 +73,72 @@ public class GeminiService {
                     .get(0)
                     .getText();
 
-        } catch (HttpClientErrorException e) {
+        }
 
-            // Muestra el error completo en la consola
-            System.err.println("Error HTTP de Gemini:");
+        catch (HttpClientErrorException e) {
+
             System.err.println(e.getResponseBodyAsString());
 
-            if (e.getStatusCode().value() == 429) {
-                return """
-                        No fue posible generar la recomendación porque
-                        la cuota gratuita de la API de Gemini está agotada.
+            switch (e.getStatusCode().value()) {
 
-                        Intente nuevamente más tarde o utilice una API Key con cuota disponible.
+                case 401:
+                    return "❌ La API Key de Gemini es inválida.";
+
+                case 404:
+                    return "❌ El modelo de Gemini no existe.";
+
+                case 429:
+                    return """
+                            ⚠️ Se alcanzó el límite gratuito de Gemini.
+
+                            Intente nuevamente más tarde.
+                            """;
+
+                default:
+                    return "❌ Error HTTP " + e.getStatusCode();
+            }
+
+        }
+
+        catch (HttpServerErrorException e) {
+
+            System.err.println(e.getResponseBodyAsString());
+
+            if (e.getStatusCode().value() == 503) {
+
+                return """
+                        ⚠️ Gemini se encuentra temporalmente ocupado.
+
+                        Esto ocurre cuando el servicio tiene alta demanda.
+
+                        Intente nuevamente en unos minutos.
                         """;
             }
 
-            if (e.getStatusCode().value() == 401) {
-                return "La API Key de Gemini es inválida o ha expirado.";
-            }
+            return "Error del servidor de Gemini: " + e.getStatusCode();
 
-            if (e.getStatusCode().value() == 404) {
-                return "El modelo de Gemini solicitado no existe o no está disponible.";
-            }
-
-            return "Error al consumir la API de Gemini. Código HTTP: " + e.getStatusCode();
-
-        } catch (ResourceAccessException e) {
-
-            System.err.println("Error de conexión con Gemini:");
-            e.printStackTrace();
-
-            return "No fue posible establecer conexión con la API de Gemini.";
-
-        } catch (Exception e) {
-
-            System.err.println("Error inesperado en Gemini:");
-            e.printStackTrace();
-
-            return "Ocurrió un error inesperado al generar la recomendación.";
         }
+
+        catch (ResourceAccessException e) {
+
+            return """
+                    ❌ No fue posible conectar con Gemini.
+
+                    Revise su conexión a Internet.
+                    """;
+
+        }
+
+        catch (Exception e) {
+
+            e.printStackTrace();
+
+            return """
+                    ❌ Ocurrió un error inesperado al generar
+                    la recomendación.
+                    """;
+        }
+
     }
+
 }
