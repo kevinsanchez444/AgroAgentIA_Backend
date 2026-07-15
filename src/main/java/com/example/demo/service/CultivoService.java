@@ -36,7 +36,7 @@ public class CultivoService {
     @Transactional(readOnly = true)
     public CultivoDTO obtenerPorId(Long id) {
         Cultivo cultivo = cultivoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Cultivo no encontrado con ID: " + id));
         return convertToDTO(cultivo);
     }
@@ -52,7 +52,7 @@ public class CultivoService {
     @Transactional
     public CultivoDTO actualizar(Long id, CultivoDTO dto) {
         Cultivo cultivoExistente = cultivoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Cultivo no encontrado para actualizar con ID: " + id));
         updateEntityFromDTO(cultivoExistente, dto);
         Cultivo actualizado = cultivoRepository.save(cultivoExistente);
@@ -62,14 +62,15 @@ public class CultivoService {
     @Transactional
     public void eliminar(Long id) {
         if (!cultivoRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Cultivo no encontrado para eliminar con ID: " + id);
         }
         cultivoRepository.deleteById(id);
     }
 
     private CultivoDTO convertToDTO(Cultivo cultivo) {
-        if (cultivo == null) return null;
+        if (cultivo == null)
+            return null;
         CultivoDTO dto = new CultivoDTO();
         dto.setIdCultivo(cultivo.getIdCultivo());
         dto.setNombreLote(cultivo.getNombreLote());
@@ -95,14 +96,23 @@ public class CultivoService {
         cultivo.setFechaSiembra(dto.getFechaSiembra());
         cultivo.setVariedad(dto.getVariedad());
         cultivo.setEstado(dto.getEstado());
-        
+
         if (dto.getIdUsuario() != null) {
             Usuario usuario = usuarioRepository.findById(dto.getIdUsuario())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                             "Usuario no encontrado con ID: " + dto.getIdUsuario()));
             cultivo.setUsuario(usuario);
         } else {
             cultivo.setUsuario(null);
         }
     }
+
+    public Cultivo guardar(Cultivo cultivo) {
+        return cultivoRepository.save(cultivo);
+    }
+
+    public List<Cultivo> listar() {
+        return cultivoRepository.findAll();
+    }
+
 }
